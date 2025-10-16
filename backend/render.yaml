@@ -19,5 +19,5 @@ services:
       - key: GOOGLE_MAPS_API_KEY
         sync: false
       - key: CORS_ORIGIN
-        value: https://your-netlify-domain.netlify.app
+        value: https://cheerful-moonbeam-f6ab98.netlify.app
 

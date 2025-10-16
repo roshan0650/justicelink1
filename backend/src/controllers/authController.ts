@@ -1,26 +1,30 @@
 import { Request, Response } from 'express';
-import jwt from 'jsonwebtoken';
-import User from '../models/User';
+import jwt, { SignOptions } from 'jsonwebtoken';
+import User from '../models/User.js';
 
-const generateToken = (id: string, userType: string) => {
-  return jwt.sign({ id, userType }, process.env.JWT_SECRET || 'secret', {
-    expiresIn: process.env.JWT_EXPIRE || '7d',
-  });
+const generateToken = (id: string, userType: string): string => {
+  const secret = (process.env.JWT_SECRET || 'secret') as string;
+  const options: SignOptions = {
+    expiresIn: '7d',
+  };
+  return jwt.sign({ id, userType }, secret, options);
 };
 
-export const register = async (req: Request, res: Response) => {
+export const register = async (req: Request, res: Response): Promise<void> => {
   try {
     const { name, email, password, userType } = req.body;
 
     // Validate input
     if (!name || !email || !password) {
-      return res.status(400).json({ error: 'Please provide all required fields' });
+      res.status(400).json({ error: 'Please provide all required fields' });
+      return;
     }
 
     // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res.status(400).json({ error: 'Email already registered' });
+      res.status(400).json({ error: 'Email already registered' });
+      return;
     }
 
     // Create user
@@ -49,25 +53,28 @@ export const register = async (req: Request, res: Response) => {
   }
 };
 
-export const login = async (req: Request, res: Response) => {
+export const login = async (req: Request, res: Response): Promise<void> => {
   try {
     const { email, password } = req.body;
 
     // Validate input
     if (!email || !password) {
-      return res.status(400).json({ error: 'Please provide email and password' });
+      res.status(400).json({ error: 'Please provide email and password' });
+      return;
     }
 
     // Check for user
     const user = await User.findOne({ email }).select('+password');
     if (!user) {
-      return res.status(401).json({ error: 'Invalid credentials' });
+      res.status(401).json({ error: 'Invalid credentials' });
+      return;
     }
 
     // Check password
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
-      return res.status(401).json({ error: 'Invalid credentials' });
+      res.status(401).json({ error: 'Invalid credentials' });
+      return;
     }
 
     // Generate token

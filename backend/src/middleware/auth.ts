@@ -8,7 +8,7 @@ export interface AuthRequest extends Request {
   };
 }
 
-export const protect = (req: AuthRequest, res: Response, next: NextFunction) => {
+export const protect = (req: AuthRequest, res: Response, next: NextFunction): void => {
   let token: string | undefined;
 
   if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
@@ -16,7 +16,8 @@ export const protect = (req: AuthRequest, res: Response, next: NextFunction) => 
   }
 
   if (!token) {
-    return res.status(401).json({ error: 'Not authorized to access this route' });
+    res.status(401).json({ error: 'Not authorized to access this route' });
+    return;
   }
 
   try {
@@ -27,18 +28,20 @@ export const protect = (req: AuthRequest, res: Response, next: NextFunction) => 
     };
     next();
   } catch (error) {
-    return res.status(401).json({ error: 'Not authorized to access this route' });
+    res.status(401).json({ error: 'Not authorized to access this route' });
   }
 };
 
 export const authorize = (...roles: string[]) => {
-  return (req: AuthRequest, res: Response, next: NextFunction) => {
+  return (req: AuthRequest, res: Response, next: NextFunction): void => {
     if (!req.user) {
-      return res.status(401).json({ error: 'Not authorized' });
+      res.status(401).json({ error: 'Not authorized' });
+      return;
     }
 
     if (!roles.includes(req.user.userType)) {
-      return res.status(403).json({ error: 'User role not authorized to access this route' });
+      res.status(403).json({ error: 'User role not authorized to access this route' });
+      return;
     }
 
     next();

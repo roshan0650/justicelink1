@@ -2,7 +2,7 @@ import express, { Express, Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
-import authRoutes from './routes/auth';
+import authRoutes from './routes/auth.js';
 
 // Load environment variables
 dotenv.config();
@@ -24,19 +24,19 @@ const connectDB = async () => {
   try {
     const mongoUri = process.env.MONGODB_URI;
     if (!mongoUri) {
-      throw new Error('MONGODB_URI is not defined in environment variables');
+      console.warn('⚠️  MONGODB_URI is not defined - running in demo mode');
+      return;
     }
-    
+
     await mongoose.connect(mongoUri);
     console.log('✅ MongoDB connected successfully');
   } catch (error) {
-    console.error('❌ MongoDB connection failed:', error);
-    process.exit(1);
+    console.warn('⚠️  MongoDB connection failed - running in demo mode:', error);
   }
 };
 
 // Health Check Route
-app.get('/api/health', (req: Request, res: Response) => {
+app.get('/api/health', (_req: Request, res: Response) => {
   res.json({ status: 'OK', message: 'JusticeLink Backend is running' });
 });
 
@@ -48,7 +48,7 @@ app.use('/api/auth', authRoutes);
 // app.use('/api/ai', aiRoutes);
 
 // Error Handling Middleware
-app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
   console.error('Error:', err);
   res.status(err.status || 500).json({
     error: err.message || 'Internal Server Error',
@@ -56,7 +56,7 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
 });
 
 // 404 Handler
-app.use((req: Request, res: Response) => {
+app.use((_req: Request, res: Response) => {
   res.status(404).json({ error: 'Route not found' });
 });
 

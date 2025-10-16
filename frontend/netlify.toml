@@ -1,7 +1,7 @@
 [build]
   command = "npm run build"
   functions = "netlify/functions"
-  publish = ".next"
+  publish = "out"
 
 [build.environment]
   NODE_VERSION = "18.17.0"
@@ -22,13 +22,13 @@
 
 [context.production]
   command = "npm run build"
-  publish = ".next"
+  publish = "out"
 
 [context.preview]
   command = "npm run build"
-  publish = ".next"
+  publish = "out"
 
 [context.deploy-preview]
   command = "npm run build"
-  publish = ".next"
+  publish = "out"
 

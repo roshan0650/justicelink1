@@ -1,7 +1,6 @@
 [build]
   command = "npm run build"
-  functions = "netlify/functions"
-  publish = "out"
+  publish = ".next/standalone"
 
 [build.environment]
   NODE_VERSION = "18.17.0"
@@ -19,16 +18,17 @@
     X-Content-Type-Options = "nosniff"
     X-XSS-Protection = "1; mode=block"
     Referrer-Policy = "strict-origin-when-cross-origin"
+    Cache-Control = "public, max-age=3600, must-revalidate"
 
 [context.production]
   command = "npm run build"
-  publish = "out"
+  publish = ".next/standalone"
 
 [context.preview]
   command = "npm run build"
-  publish = "out"
+  publish = ".next/standalone"
 
 [context.deploy-preview]
   command = "npm run build"
-  publish = "out"
+  publish = ".next/standalone"
 

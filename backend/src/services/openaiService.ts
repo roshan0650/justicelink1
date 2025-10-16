@@ -1,8 +1,15 @@
 import OpenAI from 'openai';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+let openai: OpenAI | null = null;
+
+const getOpenAIClient = (): OpenAI => {
+  if (!openai) {
+    openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    });
+  }
+  return openai;
+};
 
 export const openaiService = {
   /**
@@ -10,7 +17,8 @@ export const openaiService = {
    */
   generateLegalSummary: async (problemDescription: string): Promise<string> => {
     try {
-      const message = await openai.chat.completions.create({
+      const client = getOpenAIClient();
+      const message = await client.chat.completions.create({
         model: 'gpt-4o-mini',
         max_tokens: 1024,
         messages: [
@@ -34,7 +42,8 @@ export const openaiService = {
    */
   generateLegalAdvice: async (problemDescription: string): Promise<string> => {
     try {
-      const message = await openai.chat.completions.create({
+      const client = getOpenAIClient();
+      const message = await client.chat.completions.create({
         model: 'gpt-4o-mini',
         max_tokens: 2048,
         messages: [
@@ -58,7 +67,8 @@ export const openaiService = {
    */
   identifyRelevantLaws: async (problemDescription: string): Promise<string[]> => {
     try {
-      const message = await openai.chat.completions.create({
+      const client = getOpenAIClient();
+      const message = await client.chat.completions.create({
         model: 'gpt-4o-mini',
         max_tokens: 1024,
         messages: [
@@ -95,7 +105,8 @@ export const openaiService = {
    */
   generateDocumentTemplate: async (documentType: string, context: string): Promise<string> => {
     try {
-      const message = await openai.chat.completions.create({
+      const client = getOpenAIClient();
+      const message = await client.chat.completions.create({
         model: 'gpt-4o-mini',
         max_tokens: 2048,
         messages: [
@@ -119,12 +130,13 @@ export const openaiService = {
    */
   chatWithAssistant: async (messages: Array<{ role: 'user' | 'assistant'; content: string }>): Promise<string> => {
     try {
+      const client = getOpenAIClient();
       const systemMessage = {
         role: 'system' as const,
         content: 'You are a helpful legal assistant for JusticeLink. Provide accurate legal information and guidance based on Indian law. Always recommend consulting with a qualified lawyer for specific legal matters.',
       };
 
-      const response = await openai.chat.completions.create({
+      const response = await client.chat.completions.create({
         model: 'gpt-4o-mini',
         max_tokens: 1024,
         messages: [systemMessage, ...messages.map((msg) => ({

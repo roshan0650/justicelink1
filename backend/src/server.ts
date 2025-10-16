@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import authRoutes from './routes/auth.js';
+import aiRoutes from './routes/ai.js';
 
 // Load environment variables
 dotenv.config();
@@ -42,10 +43,10 @@ app.get('/api/health', (_req: Request, res: Response) => {
 
 // API Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/ai', aiRoutes);
 // app.use('/api/users', userRoutes);
 // app.use('/api/lawyers', lawyerRoutes);
 // app.use('/api/issues', issueRoutes);
-// app.use('/api/ai', aiRoutes);
 
 // Error Handling Middleware
 app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {

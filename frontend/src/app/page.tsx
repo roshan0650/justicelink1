@@ -77,6 +77,9 @@ export default function Home() {
             Justice for Every Voice. Get instant legal guidance, connect with verified lawyers, and access justice affordably.
           </p>
           <div className="flex gap-4 justify-center flex-wrap">
+            <Link href="/ai-assistant" className="btn-primary">
+              🤖 AI Assistant
+            </Link>
             <Link href="/problem-input" className="btn-primary">
               Get Help Now
             </Link>

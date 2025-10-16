@@ -2,8 +2,10 @@
 
 import Link from 'next/link'
 import { motion } from 'framer-motion'
+import { useAuth } from '@/context/AuthContext'
 
 export default function Home() {
+  const { user, isAuthenticated, logout } = useAuth()
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -32,16 +34,30 @@ export default function Home() {
           <div className="font-poppins font-bold text-2xl text-primary-600">
             ⚖️ JusticeLink
           </div>
-          <div className="flex gap-6">
+          <div className="flex gap-6 items-center">
             <Link href="#features" className="text-gray-600 hover:text-primary-600 transition">
               Features
             </Link>
             <Link href="#about" className="text-gray-600 hover:text-primary-600 transition">
               About
             </Link>
-            <Link href="/auth/login" className="btn-primary text-sm">
-              Login
-            </Link>
+            {isAuthenticated && user ? (
+              <div className="flex gap-4 items-center">
+                <span className="text-gray-700 font-semibold">
+                  👤 {user.name}
+                </span>
+                <button
+                  onClick={logout}
+                  className="btn-primary text-sm"
+                >
+                  Logout
+                </button>
+              </div>
+            ) : (
+              <Link href="/auth/login" className="btn-primary text-sm">
+                Login
+              </Link>
+            )}
           </div>
         </div>
       </nav>

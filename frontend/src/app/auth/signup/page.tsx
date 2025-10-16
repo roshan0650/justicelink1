@@ -2,9 +2,12 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
+import { authAPI, tokenStorage } from '@/lib/api'
 
 export default function SignupPage() {
+  const router = useRouter()
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -13,6 +16,8 @@ export default function SignupPage() {
   })
   const [userType, setUserType] = useState<'user' | 'lawyer'>('user')
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -24,8 +29,46 @@ export default function SignupPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
-    // TODO: Implement signup logic
-    setTimeout(() => setLoading(false), 1000)
+    setError('')
+    setSuccess('')
+
+    // Validate passwords match
+    if (formData.password !== formData.confirmPassword) {
+      setError('Passwords do not match')
+      setLoading(false)
+      return
+    }
+
+    // Validate password length
+    if (formData.password.length < 6) {
+      setError('Password must be at least 6 characters')
+      setLoading(false)
+      return
+    }
+
+    try {
+      const response = await authAPI.signup({
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+        userType,
+      })
+
+      // Store token and user data
+      tokenStorage.setToken(response.token)
+      tokenStorage.setUser(response.user)
+
+      setSuccess('Account created successfully! Redirecting...')
+
+      // Redirect to dashboard after 1 second
+      setTimeout(() => {
+        router.push('/')
+      }, 1000)
+    } catch (err: any) {
+      setError(err.message || 'Signup failed. Please try again.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -43,6 +86,18 @@ export default function SignupPage() {
             </h1>
             <p className="text-gray-600">Create your account to get started</p>
           </div>
+
+          {error && (
+            <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg text-sm">
+              {error}
+            </div>
+          )}
+
+          {success && (
+            <div className="mb-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded-lg text-sm">
+              {success}
+            </div>
+          )}
 
           {/* User Type Selector */}
           <div className="flex gap-4 mb-6">

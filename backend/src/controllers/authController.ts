@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import jwt, { SignOptions } from 'jsonwebtoken';
-import User from '../models/User.js';
+import { userService } from '../services/userService.js';
 
 const generateToken = (id: string, userType: string): string => {
   const secret = (process.env.JWT_SECRET || 'secret') as string;
@@ -20,15 +20,8 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    // Check if user already exists
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      res.status(400).json({ error: 'Email already registered' });
-      return;
-    }
-
     // Create user
-    const user = await User.create({
+    const user = await userService.create({
       name,
       email,
       password,
@@ -36,7 +29,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     });
 
     // Generate token
-    const token = generateToken(user._id.toString(), user.userType);
+    const token = generateToken(user._id, user.userType);
 
     res.status(201).json({
       success: true,
@@ -64,21 +57,21 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     }
 
     // Check for user
-    const user = await User.findOne({ email }).select('+password');
+    const user = await userService.findByEmail(email);
     if (!user) {
       res.status(401).json({ error: 'Invalid credentials' });
       return;
     }
 
     // Check password
-    const isMatch = await user.comparePassword(password);
+    const isMatch = await userService.comparePassword(password, user.password);
     if (!isMatch) {
       res.status(401).json({ error: 'Invalid credentials' });
       return;
     }
 
     // Generate token
-    const token = generateToken(user._id.toString(), user.userType);
+    const token = generateToken(user._id, user.userType);
 
     res.status(200).json({
       success: true,
@@ -95,12 +88,21 @@ export const login = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
-export const getMe = async (req: any, res: Response) => {
+export const getMe = async (req: any, res: Response): Promise<void> => {
   try {
-    const user = await User.findById(req.user.id);
+    const user = await userService.findById(req.user.id);
+    if (!user) {
+      res.status(404).json({ error: 'User not found' });
+      return;
+    }
     res.status(200).json({
       success: true,
-      user,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        userType: user.userType,
+      },
     });
   } catch (error: any) {
     res.status(500).json({ error: error.message });

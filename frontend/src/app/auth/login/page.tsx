@@ -2,19 +2,43 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
+import { authAPI, tokenStorage } from '@/lib/api'
 
 export default function LoginPage() {
+  const router = useRouter()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [userType, setUserType] = useState<'user' | 'lawyer'>('user')
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
-    // TODO: Implement login logic
-    setTimeout(() => setLoading(false), 1000)
+    setError('')
+    setSuccess('')
+
+    try {
+      const response = await authAPI.login({ email, password })
+
+      // Store token and user data
+      tokenStorage.setToken(response.token)
+      tokenStorage.setUser(response.user)
+
+      setSuccess('Login successful! Redirecting...')
+
+      // Redirect to dashboard after 1 second
+      setTimeout(() => {
+        router.push('/')
+      }, 1000)
+    } catch (err: any) {
+      setError(err.message || 'Login failed. Please try again.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -49,6 +73,18 @@ export default function LoginPage() {
               </button>
             ))}
           </div>
+
+          {error && (
+            <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg text-sm">
+              {error}
+            </div>
+          )}
+
+          {success && (
+            <div className="mb-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded-lg text-sm">
+              {success}
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
